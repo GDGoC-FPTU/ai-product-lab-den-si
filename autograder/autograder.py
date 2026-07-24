@@ -184,7 +184,11 @@ def run_autograder():
                 print("[PASS] Script ran successfully with exit code 0")
                 sys.exit(0)
             else:
-                print(f"[FAIL] Script failed with exit code {result.returncode}\n{result.stderr}")
+                diagnostic_output = (result.stdout + "\n" + result.stderr).strip()
+                print(
+                    f"[FAIL] Script failed with exit code {result.returncode}\n"
+                    f"{diagnostic_output}"
+                )
                 sys.exit(1)
         except Exception as e:
             print(f"[FAIL] Error running script: {e}")

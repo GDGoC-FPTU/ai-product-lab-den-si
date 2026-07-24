@@ -167,9 +167,18 @@ def verify_response(test_index: int, output: str) -> bool:
 if __name__ == "__main__":
     api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
     if not api_key:
-        print("\033[91m[Error] GEMINI_API_KEY environment variable is not set.\033[0m")
-        print("PowerShell: $env:GEMINI_API_KEY='your_key'")
-        print("macOS/Linux: export GEMINI_API_KEY='your_key'")
+        print(
+            "\033[91m[Error] GEMINI_API_KEY environment variable is not set.\033[0m",
+            file=sys.stderr,
+        )
+        print(
+            "PowerShell: $env:GEMINI_API_KEY='your_key'",
+            file=sys.stderr,
+        )
+        print(
+            "macOS/Linux: export GEMINI_API_KEY='your_key'",
+            file=sys.stderr,
+        )
         sys.exit(1)
         
     print("\033[94m==================================================")
@@ -191,7 +200,10 @@ if __name__ == "__main__":
             if not verify_response(i, output):
                 all_tests_passed = False
         except Exception as e:
-            print(f"❌ Error during execution: {e}")
+            # stderr is intentionally used so CI/autograder failure logs expose
+            # the API error instead of hiding it. SDK exceptions do not include
+            # the API key value.
+            print(f"❌ Error during execution: {type(e).__name__}: {e}", file=sys.stderr)
             all_tests_passed = False
             
         print("-" * 50 + "\n")
