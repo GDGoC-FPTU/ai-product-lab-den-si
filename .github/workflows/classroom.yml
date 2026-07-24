@@ -79,6 +79,9 @@ jobs:
     - name: Prototype Script
       id: prototype-script
       uses: classroom-resources/autograding-command-grader@v1
+      env:
+        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        GEMINI_MODEL: gemini-flash-latest
       with:
         test-name: Prototype Script
         setup-command: ''
@@ -88,6 +91,9 @@ jobs:
     - name: Safety Verification
       id: safety-verification
       uses: classroom-resources/autograding-command-grader@v1
+      env:
+        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        GEMINI_MODEL: gemini-flash-latest
       with:
         test-name: Safety Verification
         setup-command: ''
