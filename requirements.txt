@@ -1,2 +1,5 @@
-# Environment Dependencies
-# List all required python packages here.
+# Runtime
+google-genai>=2.14.0
+
+# Testing
+pytest
