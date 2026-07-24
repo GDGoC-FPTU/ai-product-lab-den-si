@@ -12,6 +12,7 @@ Instructions:
 
 import os
 import sys
+from pathlib import Path
 
 # Keep Vietnamese text and status symbols readable on Windows terminals and
 # when output is captured by the autograder.
@@ -22,6 +23,30 @@ if hasattr(sys.stderr, "reconfigure"):
 
 # The environment variable makes model upgrades possible without editing source.
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-flash-latest")
+CI_API_KEY_FILE = Path.home() / ".gemini_api_key"
+
+
+def load_api_key() -> str | None:
+    """
+    Loads the Gemini key from the environment or the CI credential file.
+
+    GitHub Classroom's command grader intentionally strips custom environment
+    variables before spawning the Python command, but preserves HOME. The
+    workflow therefore writes the secret to a temporary, permission-restricted
+    file in HOME and removes it after the runtime tests.
+    """
+    environment_key = (
+        os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
+    )
+    if environment_key:
+        return environment_key.strip()
+
+    try:
+        file_key = CI_API_KEY_FILE.read_text(encoding="utf-8").strip()
+    except (FileNotFoundError, OSError):
+        return None
+
+    return file_key or None
 
 # ===========================================================================
 # 🛡️ Operational Boundaries to Enforce via System Prompt:
@@ -68,7 +93,7 @@ def evaluate_prompt(user_input: str) -> str:
     from google import genai
     from google.genai import types
 
-    api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
+    api_key = load_api_key()
     if not api_key:
         raise RuntimeError(
             "GEMINI_API_KEY or GOOGLE_API_KEY is not configured."
@@ -165,7 +190,7 @@ def verify_response(test_index: int, output: str) -> bool:
 
 
 if __name__ == "__main__":
-    api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
+    api_key = load_api_key()
     if not api_key:
         print(
             "\033[91m[Error] GEMINI_API_KEY environment variable is not set.\033[0m",

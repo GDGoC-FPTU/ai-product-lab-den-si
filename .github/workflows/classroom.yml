@@ -76,12 +76,20 @@ jobs:
         command: python autograder/autograder.py --check-code-3
         timeout: 10
         max-score: 10
+    - name: Prepare Gemini credential
+      shell: bash
+      env:
+        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      run: |
+        if [ -z "${GEMINI_API_KEY:-}" ]; then
+          echo "::error::Repository secret GEMINI_API_KEY is missing or empty."
+          exit 1
+        fi
+        install -m 600 /dev/null "$HOME/.gemini_api_key"
+        printf '%s' "$GEMINI_API_KEY" > "$HOME/.gemini_api_key"
     - name: Prototype Script
       id: prototype-script
       uses: classroom-resources/autograding-command-grader@v1
-      env:
-        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        GEMINI_MODEL: gemini-flash-latest
       with:
         test-name: Prototype Script
         setup-command: ''
@@ -91,15 +99,16 @@ jobs:
     - name: Safety Verification
       id: safety-verification
       uses: classroom-resources/autograding-command-grader@v1
-      env:
-        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        GEMINI_MODEL: gemini-flash-latest
       with:
         test-name: Safety Verification
         setup-command: ''
         command: python autograder/autograder.py --check-code-5
         timeout: 10
         max-score: 10
+    - name: Remove Gemini credential
+      if: always()
+      shell: bash
+      run: rm -f "$HOME/.gemini_api_key"
     - name: Autograding Reporter
       uses: classroom-resources/autograding-grading-reporter@v1
       env:
